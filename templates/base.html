@@ -347,8 +347,8 @@
     </noscript>
     <br>
     <main id="content">
-        {% if i18n_config.top_notification %}
-            {{ render_django(i18n_config.top_notification) }}
+        {% if misc_config.top_notification %}
+            {{ render_django(misc_config.top_notification) }}
         {% endif %}
         {% block title_row %}
             <h2 style="color:#393630; display:inline">
@@ -364,8 +364,8 @@
         <div id="content-body">{% block body %}{% endblock %}</div>
     </main>
 
-    {% if i18n_config.announcement %}
-        <div id="announcement">{{ i18n_config.announcement|safe }}</div>
+    {% if misc_config.announcement %}
+        <div id="announcement">{{ misc_config.announcement|safe }}</div>
     {% endif %}
 
     {% block bodyend %}{% endblock %}
@@ -374,9 +374,9 @@
         <span id="footer-content">
             <br>
             {{_('proudly powered by %(dmoj)s', dmoj=safe('<a style="color: #808080" href="https://dmoj.ca"><b>DMOJ</b></a>'))}} |
-            {{_('follow us on %(github)s', github=safe('<a style="color: #808080" href="https://github.com/winprn/OJ"><b>Github</b></a>'))}}
-            {% if i18n_config.footer %}
-                {{ i18n_config.footer|safe }} |
+            {{_('follow us on %(github)s', github=safe('<a style="color: #808080" href="https://github.com/AnoTherK-ATK/LHPOJ"><b>Github</b></a>'))}}
+            {% if misc_config.footer %}
+                {{ misc_config.footer|safe }} |
             {% endif %}
             <form id="set_language" action="{{ url('set_language') }}" method="post" style="display: inline">
                 {% csrf_token %}
