@@ -19,10 +19,6 @@
             height: 70px
         }
 
-        .grayed {
-            color: #666;
-        }
-
         .inline-header {
             float: left;
             font-size: 1.1em;
@@ -31,7 +27,6 @@
         }
 
         .block-header {
-            color: #666;
             font-size: 1.1em;
         }
 
@@ -47,8 +42,8 @@
         #edit-form {
             border: unset;
             background: unset;
-            max-width: 700px;
-            width: 100% !important;
+            display: block;
+            padding-bottom: 30px;
         }
 
         .settings {
@@ -59,7 +54,7 @@
 
         .pane {
             display: block;
-            width: 337px;
+            width: 340px;
         }
 
         .api-token {
@@ -149,6 +144,15 @@
                             $('#remove-api-token-button').remove();
                         },
                     });
+                }
+            });
+
+            // Alert when leaving an org
+            $('.sortedm2m input').click(function () {
+                if (!$(this).is(':checked')) {
+                    return confirm('{{ _('Are you sure you want to leave this organization?') }}\n' +
+                               '{{ _('You will have to rejoin to show up on the organization leaderboard.') }}'
+                            );
                 }
             });
         });
@@ -266,21 +270,25 @@
 {% block body %}
     <div class="centered-form">
         <form id="edit-form" action="" method="post" class="form-area">
-            {% if form.errors %}
+            {% if form.errors or form_user.errors %}
                 <div class="alert alert-danger alert-dismissable">
                     <a href="#" class="close">x</a>
-                    {{ form.non_field_errors() }}
-                    {{ form.about.errors }}
+                    {% if form.errors %}
+                        {{ form.non_field_errors() }}
+                        {{ form.about.errors }}
+                    {% endif %}
+                    {% if form_user.errors %}
+                        {{ form_user.first_name.errors }}
+                    {% endif %}
                 </div>
             {% endif %}
-
             {% csrf_token %}
             {% if form_user.first_name %}
                 <table>
                     <tr>
-                        <td><div class="block-header">{{ _('Full name') }}:</div></td>
+                        <td><div class="block-header grayed">{{ _('Full name') }}:</div></td>
                         {% if form.display_badge %}
-                            <td><div class="block-header">{{ _('Display badge') }}:</div></td>
+                            <td><div class="block-header grayed">{{ _('Display badge') }}:</div></td>
                         {% endif %}
                     </tr>
                     <tr>
@@ -294,7 +302,7 @@
             {% endif %}
 
             {% if form.about %}
-                <div style="padding-top:0.5em" class="block-header">{{ _('Self-description') }}:</div>
+                <div style="padding-top:0.5em" class="block-header grayed">{{ _('Self-description:') }}</div>
                     {{ form.about }}
                 <hr>
             {% endif %}
@@ -303,24 +311,41 @@
                 <div class="pane" style="vertical-align:top">
                     <table style="padding-right:0.8em">
                         <tr title="{{ _('Select your closest major city') }}">
-                            <td><label class="inline-header grayed">{{ _('Timezone') }}:</label></td>
+                            <td><label class="inline-header grayed">{{ _('Time zone:') }}</label></td>
                             <td><span class="fullwidth">{{ form.timezone }}</span></td>
                         </tr>
                         <tr>
-                            <td><label class="inline-header grayed">{{ _('Language') }}:</label></td>
+                            <td><label class="inline-header grayed">{{ _('Language:') }}</label></td>
                             <td><span class="fullwidth">{{ form.language }}</span></td>
                         </tr>
+                        <tr{% if not perms.judge.test_site %} style="display: none"{% endif %}>
+                            <td><label class="inline-header grayed">{{ _('Site theme:') }}</label></td>
+                            <td><span class="fullwidth">{{ form.site_theme }}</span></td>
+                        </tr>
                         <tr>
-                            <td><label class="inline-header grayed">{{ _('Editor theme') }}:</label></td>
+                            <td><label class="inline-header grayed">{{ _('Editor theme:') }}</label></td>
                             <td><span class="fullwidth">{{ form.ace_theme }}</span></td>
                         </tr>
                         {% if has_math_config %}
                             <tr>
-                                <td><label class="inline-header grayed">{{ _('Math engine') }}:</label></td>
+                                <td><label class="inline-header grayed">{{ _('Math engine:') }}</label></td>
                                 <td><span class="fullwidth">{{ form.math_engine }}</span></td>
                             </tr>
                         {% endif %}
                     </table>
+                </div>
+                {% if form.organizations %}
+                    <div class="pane">
+                        <div style="padding-bottom:0.3em; margin-top:0.3em" class="block-header grayed">
+                            {{ _('Affiliated organizations') }}:
+                        </div>
+                        {{ form.organizations }}
+                    </div>
+                {% endif %}
+            </div>
+            <hr>
+            <div class="settings" style="padding-top:0.7em">
+                <div class="pane">
                     <table border="0">
                         {% if form.newsletter %}
                             <tr><td>
@@ -337,8 +362,7 @@
                             </label>
                         </td></tr>
                         <tr><td>
-                            <a href="http://www.gravatar.com/" title="{{ _('Change your avatar') }}"
-                               target="_blank" class="inline-header" rel="noopener">
+                            <a href="https://www.gravatar.com/" target="_blank" class="inline-header" rel="noopener">
                                 {{ _('Change your avatar') }}
                             </a>
                         </td></tr>
@@ -355,9 +379,11 @@
                             </td></tr>
                         {% endif %}
                     </table>
+                </div>
+                <div class="pane">
                     <div>
                         {% if profile.is_totp_enabled %}
-                            <div class="block-header grayed">{{ _('Two-factor Authentication is enabled') }}:</div>
+                            <div class="block-header grayed">{{ _('Two-factor authentication is enabled:') }}</div>
                             <div class="block-buttons">
                                 {% if require_staff_2fa and request.user.is_staff and not profile.is_webauthn_enabled %}
                                     <a id="disable-2fa-button" class="button inline-button">{{ _('Disable') }}</a>
@@ -368,7 +394,7 @@
                                 <a href="{{ url('refresh_2fa') }}" class="button inline-button">{{ _('Refresh') }}</a>
                             </div>
                             <div class="block-header grayed">
-                                {{ _('Scratch Codes:') }}
+                                {{ _('Scratch codes:') }}
                                 {% if profile.scratch_codes %}
                                     <a id="generate-scratch-codes-button" href="{{ url('generate_scratch_codes') }}"
                                        class="button inline-button">{{ _('Regenerate') }}</a>
@@ -390,28 +416,15 @@
                             </div>
                         {% else %}
                             <span class="inline-header grayed">
-                                {{ _('Two-factor Authentication is disabled') }}:
+                                {{ _('Two-factor Authentication is disabled:') }}
                                 <a href="{{ url('enable_2fa') }}" class="button inline-button">{{ _('Enable') }}</a>
                             </span>
                         {% endif %}
                     </div>
-                </div>
-                {% if form.organizations %}
-                    <div class="pane">
-                        <div style="padding-bottom:0.3em; margin-top:0.3em" class="block-header">
-                            {{ _('Affiliated organizations') }}:
-                        </div>
-                        {{ form.organizations }}
-                    </div>
-                {% endif %}
-            </div>
-            <hr>
-            {% if HAS_WEBAUTHN %}
-            <div class="settings" style="padding-top:0.7em">
-                <div class="pane">
-                    <span class="inline-header grayed">
-                        <div style="padding-bottom:0.4em" class="block-header">
-                            {{ _('Security keys') }}:
+                    <span class="grayed">
+                    {% if HAS_WEBAUTHN %}
+                        <div style="padding-bottom:0.4em" class="block-header grayed">
+                            {{- _('Security keys:') -}}
                         </div>
                         <table class="table">
                             {% if profile.is_webauthn_enabled %}
@@ -432,11 +445,11 @@
                                 <td><button id="new-webauthn" class="inline-button">{{ _('Add') }}</button></td>
                             </tr>
                         </table>
+                    {% endif %}
                     </span>
                 </div>
             </div>
             <hr>
-            {% endif %}
 
             <input type="submit" class="submit-bar" value="{{ _('Update profile') }}">
         </form>
