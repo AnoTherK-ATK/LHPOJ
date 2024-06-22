@@ -55,7 +55,7 @@ $(function () {
 			window.onpagehide =
 			window.onfocus =
 			window.onblur =
-				onchange;
+			onchange;
 
 	function onchange(evt) {
 		var v = 'window-visible',
@@ -76,9 +76,10 @@ $(function () {
 				? 'window-hidden'
 				: 'window-visible';
 
+		// Turn off light/dark mode on document class as we are migrating to user settings.
 		// document.body.className += " dark";
-		const theme = localStorage.getItem('theme') || 'light';
-		document.body.classList.add(theme);
+		// const theme = localStorage.getItem('theme') || 'light';
+		// document.body.classList.add(theme);
 
 		if ('$' in window) $(window).trigger('dmoj:' + document.body.className);
 	}
