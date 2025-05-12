@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://github.com/AnoTherK-ATK/LHPOJ/blob/site/resources/icons/logo.png?raw=true" width="120px">
+  <img src="https://github.com/AnoTherK-ATK/LHPOJ/blob/site/resources/icons/logo.png?raw=true" width="300px">
   <br>
   LHPOJ: Le Hong Phong Online Judge
 </h1>
