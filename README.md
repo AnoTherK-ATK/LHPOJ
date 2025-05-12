@@ -4,8 +4,8 @@
   LHPOJ: Le Hong Phong Online Judge
 </h1>
 <p align="center">
-  <a href="https://github.com/DMOJ/online-judge/actions?query=workflow%3Abuild">
-    <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/AnotherK-ATK/LHPOJ/build.yml?branch=master"/>
+  <a href="https://github.com/AnotherK-ATK/LHPOJ/actions?query=workflow%3Abuild">
+    <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/AnotherK-ATK/LHPOJ/build.yml?branch=site"/>
   </a>
   <a href="http://www.gnu.org/licenses/agpl-3.0">
     <img alt="License" src="https://img.shields.io/badge/license-AGPLv3.0-blue.svg"/>
