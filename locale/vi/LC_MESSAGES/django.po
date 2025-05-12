@@ -452,7 +452,7 @@ msgstr "mã bài"
 #: judge/admin/submission.py:218 judge/models/problem.py:143
 #: judge/models/tag.py:32
 msgid "problem name"
-msgstr "tên bài toán"
+msgstr "tên bài"
 
 #: judge/admin/submission.py:226 judge/models/profile.py:148
 #, fuzzy
@@ -665,7 +665,7 @@ msgid "IOI (pre-2016)"
 msgstr ""
 
 #: judge/contest_format/vnoj.py:49
-msgid "VNOJ"
+msgid "LHPOJ"
 msgstr ""
 
 #: judge/custom_translations.py:11
@@ -1234,10 +1234,10 @@ msgstr "số phút đóng băng"
 #: judge/models/contest.py:95
 msgid ""
 "If set, the scoreboard will be frozen for the last X minutes. Only available "
-"for ICPC and VNOJ format."
+"for ICPC and LHPOJ format."
 msgstr ""
 "Nếu được thiết lập, bảng xếp hạng sẽ dược đóng băng trong X phút cuối. Chỉ "
-"hỗ trợ format ICPC và VNOJ."
+"hỗ trợ format ICPC và LHPOJ."
 
 #: judge/models/contest.py:97 judge/models/problem.py:185
 msgid "publicly visible"
@@ -4800,7 +4800,7 @@ msgstr "dựa trên nền tảng %(dmoj)s"
 #: templates/base.html:364
 #, python-format
 msgid "follow us on %(github)s and %(facebook)s"
-msgstr "theo dõi VNOI trên %(github)s và %(facebook)s"
+msgstr "theo dõi LHPOJ trên %(github)s và %(facebook)s"
 
 #: templates/blog/blog-list-tabs.html:4
 msgid "Newsfeed"

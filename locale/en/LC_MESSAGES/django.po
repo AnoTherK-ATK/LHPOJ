@@ -641,7 +641,7 @@ msgid "IOI (pre-2016)"
 msgstr ""
 
 #: judge/contest_format/vnoj.py:19
-msgid "VNOJ"
+msgid "LHPOJ"
 msgstr ""
 
 #: judge/contest_format/vnoj.py:124
