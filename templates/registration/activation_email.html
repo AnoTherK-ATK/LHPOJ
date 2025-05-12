@@ -1,19 +1,68 @@
-<b>{{ _('Thanks for registering on the %(site_name)s! We\'re glad to have you.', site_name=site.name) }}</b>
-<br><br>
-{{ _('Please activate your %(site_name)s account in the next %(expiration_days)d days.', expiration_days=expiration_days, site_name=SITE_NAME) }}
-<br><br>
-{{ _('Please click on the following link to activate your account:') }}
-<p style="margin-left:1em">
-      <a href="http://{{ site.domain }}/accounts/activate/{{ activation_key }}/">http://{{ site.domain }}/accounts/activate/{{ activation_key }}</a>
-</p>
-
-{{ _('Alternatively, you can reply to this message to activate your account.') }}
-{{ _('Your reply must keep the following text intact for this to work:') }}
-
-<pre style="margin-left:1em">
-{{ activation_key }}
-</pre>
-
-{{ _('See you soon!') }}
-<br>
-{{ _('If you have problems activating your account, feel free to shoot us a message at: ') }}{% if misc_config.discord_invite_link and misc_config.discord_invite_shieldio %}<a href="{{ misc_config.discord_invite_link }}"><img src="{{ misc_config.discord_invite_shieldio }}"></a>{% endif %}
+<!-- Outer wrapper to center the email content -->
+<div style="width:100%;background-color:#f5f5f5;padding: 2em 0; font-family: Arial, sans-serif;">
+      <!-- Inner card -->
+      <div
+            style="max-width:600px; margin:0 auto; background-color:#ffffff; border:2px solid #ddd; border-radius:16px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <!-- Header area -->
+            <div style="text-align:center; padding:1.5em;">
+                  <a href="{{ request.scheme }}://{{ site.domain }}">
+                        <img src="{{ request.scheme }}://{{ site.domain }}/static/icons/logo_black.png" alt="{{ site.name }}"
+                              height="75">
+                  </a>
+            </div>
+            <!-- Main content -->
+            <div style="padding:0 2em 2em;">
+                  <h2 style="font-size:1.5em; font-weight:600; color:#333; text-align:center; margin:0 0 1em;">
+                        {{ _('Welcome to %(site_name)s!', site_name=site.name) }}
+                  </h2>
+                  <p style="font-size:1em; color:#444; line-height:1.6em; margin-bottom:1.5em;">
+                        <strong>{{ _('Thanks for registering on the %(site_name)s! We\'re glad to have you.',
+                              site_name=site.name) }}</strong>
+                        <br>
+                        <br>
+                        {{ _('Please activate your %(site_name)s account in the next %(expiration_days)d days.',
+                        expiration_days=expiration_days, site_name=SITE_NAME) }}
+                  </p>
+                  <p style="font-size:1em; color:#444; margin-bottom:1em;">
+                        {{ _('Please click on the following link to activate your account:') }}
+                  </p>
+                  <!-- Activation link -->
+                  <p style="margin:1em 0; text-align:center;">
+                        <a href="{{ request.scheme }}://{{ site.domain }}/accounts/activate/{{ activation_key }}/"
+                              style="color: #ffffff; background-color: #2980b9; text-decoration: none; padding: 0.75em 1.5em; border-radius: 4px; display:inline-block;">
+                              {{ _('Activate Account') }}
+                        </a>
+                  </p>
+                  <!-- Optional raw link fallback -->
+                  <p style="font-size:0.9em; color:#777; text-align:center;">
+                        {{ _('Or copy and paste the following link into your browser:') }}
+                        <br>
+                        <a href="{{ request.scheme }}://{{ site.domain }}/accounts/activate/{{ activation_key }}/"
+                              style="color: #2980b9; text-decoration: none;"> http://{{ site.domain
+                              }}/accounts/activate/{{ activation_key }}
+                        </a>
+                  </p>
+                  <p style="font-size:1em; color:#444; line-height:1.6em; margin-top:2em;">
+                        {{ _('Alternatively, you can reply to this message to activate your account.') }}
+                        <br>
+                        {{ _('Your reply must keep the following text intact for this to work:') }}
+                  </p>
+                  <pre
+                        style="background-color:#f8f8f8; padding:1em; border-radius:4px; overflow-x:auto; font-size:0.9em;">{{ activation_key }}</pre>
+                  <p style="font-size:1em; color:#444; margin-top:2em;">
+                        {{ _('See you soon!') }}
+                  </p>
+                  <p style="font-size:1em; color:#444;">
+                        {{ _('If you have problems activating your account, feel free to shoot us a message at:') }} {%
+                        if misc_config.discord_invite_link and misc_config.discord_invite_shieldio %} <a
+                              href="{{ misc_config.discord_invite_link }}">
+                              <img src="{{ misc_config.discord_invite_shieldio }}" alt="Join us on Discord">
+                        </a> {% endif %}
+                  </p>
+            </div>
+            <!-- Footer area (no background) -->
+            <div style="text-align:center; padding:1em; font-size:0.85em; color:#888;">
+                  {{ site.name }} • {{ request.scheme }}://{{ site.domain }}
+            </div>
+      </div>
+</div>
