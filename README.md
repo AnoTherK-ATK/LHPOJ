@@ -1,12 +1,29 @@
-# VNOJ: VNOI Online Judge [![Build Status](https://github.com/VNOI-Admin/OJ/workflows/build/badge.svg)](https://github.com/VNOI-Admin/OJ/actions/) [![AGPL License](https://img.shields.io/badge/license-AGPLv3.0-blue.svg)](http://www.gnu.org/licenses/agpl-3.0) [![Discord link](https://img.shields.io/discord/660930260405190688?color=%237289DA&label=Discord&logo=Discord)](https://discord.com/invite/TDyYVyd)
+<h1 align="center">
+  <img src="https://github.com/AnoTherK-ATK/LHPOJ/blob/site/resources/icons/logo.png?raw=true" width="120px">
+  <br>
+  LHPOJ: Le Hong Phong Online Judge
+</h1>
+<p align="center">
+  <a href="https://github.com/DMOJ/online-judge/actions?query=workflow%3Abuild">
+    <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/AnotherK-ATK/LHPOJ/build.yml?branch=master"/>
+  </a>
+  <a href="http://www.gnu.org/licenses/agpl-3.0">
+    <img alt="License" src="https://img.shields.io/badge/license-AGPLv3.0-blue.svg"/>
+  </a>
+  <a href="https://dmoj.ca/about/discord/">
+    <img src="https://img.shields.io/discord/677340492651954177?color=%237289DA&label=Discord"/>
+  </a>
+</p>
 
-As a fork of [DMOJ](https://github.com/DMOJ/online-judge), VNOJ serves as [VNOI](https://team.vnoi.info/)'s official online judge and hosts its programming contests.
+**LHPOJ (Le Hong Phong Online Judge)** is a customized fork of [DMOJ](https://github.com/DMOJ/online-judge), built to serve the needs of Le Hong Phong High School for the Gifted’s programming community.
 
-See it live at [oj.vnoi.info](https://oj.vnoi.info/)!
+This fork is adapted from [VNOJ](https://github.com/VNOI-Admin/OJ), which is used by [VNOI](https://team.vnoi.info/) for programming contests and education.
+
+See it live at [LHPOJ](https://github.com/AnoTherK-ATK/LHPOJ/tree/site)!
 
 ## Features
 
-Check out its features [here](https://github.com/DMOJ/online-judge#features).
+Check out LHPOJ's base features [here](https://github.com/DMOJ/online-judge#features), inherited from DMOJ.
 
 ## Installation
 
