@@ -1,7 +1,7 @@
 jQuery(function ($) {
     $(document).on('martor:preview', function (e, $content) {
         function update_math() {
-            MathJax.typesetPromise([$content[0]]).then(function () {
+            MathJax.typesetPromise([$content[0]]).then(() => {
                 $content.find('.tex-image').hide();
                 $content.find('.tex-text').show();
             });
@@ -19,7 +19,7 @@ jQuery(function ($) {
                         window.MathJax.startup = {typeset: false};
                         $.ajax({
                             type: 'GET',
-                            url: '/static/vnoj/mathjax/tex-chtml.min.js',
+                            url: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-chtml.min.js',
                             dataType: 'script',
                             cache: true,
                             success: update_math

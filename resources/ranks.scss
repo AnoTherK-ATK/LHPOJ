@@ -24,13 +24,27 @@
     content: "🔥";
 }
 
-.daor a, .daor {
-    color: #ff0066 !important;
-    font-weight: bold !important;
+// .daor a, .daor {
+//     color: #ff0066 !important;
+//     font-weight: bold !important;
+// }
+
+// .daor a::before {
+//     content: "🌸";
+// }
+
+.daor, 
+.daor a {
+  font-weight: bold !important;
+  background: linear-gradient(90deg, #ff0066, #6600ff);
+  background-clip: text;             // chuẩn
+  -webkit-background-clip: text;     // cho WebKit (Chrome, Safari)
+  -webkit-text-fill-color: transparent;
+  color: transparent;                // fallback nếu browser không hỗ trợ
 }
 
 .daor a::before {
-    content: "🌸";
+  content: "🌸";
 }
 
 .teacher a::before {
