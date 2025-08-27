@@ -36,16 +36,16 @@
 .daor, 
 .daor a {
   font-weight: bold !important;
-  background: linear-gradient(90deg, #ff0066, #6600ff);
+  background: linear-gradient(90deg, #ff5858, #ffc8c8);
   background-clip: text;             // chuẩn
   -webkit-background-clip: text;     // cho WebKit (Chrome, Safari)
   -webkit-text-fill-color: transparent;
   color: transparent;                // fallback nếu browser không hỗ trợ
 }
 
-.daor a::before {
-  content: "🌸";
-}
+// .daor a::before {
+//   content: "🫥";
+// }
 
 .teacher a::before {
     content: "🧑‍🏫";
