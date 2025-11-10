@@ -2,3 +2,5 @@ uwsgi
 websocket-client
 watchdog
 matplotlib
+django-recaptcha2
+pymemcache
