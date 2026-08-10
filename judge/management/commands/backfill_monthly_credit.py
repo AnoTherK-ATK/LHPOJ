@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def backfill_credit(self, org, month_start, next_month_start):
         credit_problem = (
             Submission.objects.filter(
-                problem__organizations=org,
+                problem__organization=org,
                 contest_object__isnull=True,
                 date__gte=month_start,
                 date__lt=next_month_start,
@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         credit_contest = (
             Submission.objects.filter(
-                contest_object__organizations=org,
+                contest_object__organization=org,
                 date__gte=month_start,
                 date__lt=next_month_start,
             )
@@ -50,7 +50,7 @@ class Command(BaseCommand):
         usage.save()
 
     def handle(self, *args, **options):
-        start = datetime.datetime(2023, 6, 1, tzinfo=timezone.utc)
+        start = datetime.datetime(2023, 6, 1, tzinfo=datetime.timezone.utc)
         while True:
             print('Processing', start, 'at time', timezone.now())
             next_month = start + dateutil.relativedelta.relativedelta(months=+1)

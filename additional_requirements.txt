@@ -4,3 +4,7 @@ watchdog
 matplotlib
 django-recaptcha2
 pymemcache
+pymysql
+lxml[html-clean]
+mysqlclient
+setuptools

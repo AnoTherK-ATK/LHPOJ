@@ -5,12 +5,14 @@
     {% include "leave-warning.html" %}
 
     <script src="{{ static('vnoj/jquery.formset.js') }}"></script>
+    <script src="{{ static('libs/featherlight/featherlight.min.js') }}"></script>
 
     <script>
         $(function() {
             {% if lang_limit_formset %}
                 $('#form_set tr').formset({
-                    prefix: '{{ lang_limit_formset.prefix }}'
+                    prefix: '{{ lang_limit_formset.prefix }}',
+                    deleteText: '<i class="fa fa-trash" aria-hidden="true"></i>'
                 });
 
             $('#lang_limit_title').click(function() {

@@ -98,6 +98,20 @@ class TranslatedProblemQuerySet(SearchQuerySet):
         )
 
 
+ProblemManager = models.Manager.from_queryset(TranslatedProblemQuerySet)
+
+
+class ExpiredProblemDeletionManager(ProblemManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            deleted_at__lt=timezone.now() - settings.VNOJ_PROBLEM_DELETION_GRACE_PERIOD)
+
+
+class AvailableProblemManager(ProblemManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
 class SubmissionSourceAccess:
     ALWAYS = 'A'
     SOLVED = 'S'
@@ -182,7 +196,7 @@ class Problem(models.Model):
     partial = models.BooleanField(verbose_name=_('allows partial points'), default=False)
     allowed_languages = models.ManyToManyField(Language, verbose_name=_('allowed languages'),
                                                help_text=_('List of allowed submission languages.'))
-    is_public = models.BooleanField(verbose_name=_('publicly visible'), db_index=True, default=False)
+    is_public = models.BooleanField(verbose_name=_('publicly visible'), default=False)
     is_manually_managed = models.BooleanField(verbose_name=_('manually managed'), db_index=True, default=False,
                                               help_text=_('Whether judges should be allowed to manage data or not.'))
     date = models.DateTimeField(verbose_name=_('date of publishing'), null=True, blank=True, db_index=True,
@@ -211,14 +225,17 @@ class Problem(models.Model):
                                                        choices=PROBLEM_TESTCASE_RESULT_ACCESS,
                                                        help_text=_('What testcase result should be showed to users?'))
 
-    objects = TranslatedProblemQuerySet.as_manager()
+    deleted_at = models.DateTimeField(verbose_name=_('deleted at'), null=True, db_index=True)
+
+    objects = ProblemManager()
     tickets = GenericRelation('Ticket')
+    expired_deletion = ExpiredProblemDeletionManager()
+    available = AvailableProblemManager()
 
-    organizations = models.ManyToManyField(Organization, blank=True, verbose_name=_('organizations'),
-                                           help_text=_('If private, only these organizations may see the problem.'))
+    organization = models.ForeignKey(Organization, blank=True, null=True, verbose_name=_('organization'),
+                                     on_delete=SET_NULL,
+                                     help_text=_('If private, only this organization may see the problem.'))
     is_organization_private = models.BooleanField(verbose_name=_('private to organizations'), default=False)
-
-    suggester = models.ForeignKey(Profile, blank=True, null=True, related_name='suggested_problems', on_delete=SET_NULL)
 
     allow_view_feedback = models.BooleanField(
         help_text=_('Allow user to view checker feedback.'),
@@ -251,17 +268,11 @@ class Problem(models.Model):
     def is_editor(self, profile):
         return (self.authors.filter(id=profile.id) | self.curators.filter(id=profile.id)).exists()
 
-    @property
-    def is_suggesting(self):
-        return self.suggester is not None and not self.is_public
-
     def is_editable_by(self, user):
         if not user.is_authenticated:
             return False
         if not user.has_perm('judge.edit_own_problem'):
             return False
-        if user.has_perm('judge.suggest_new_problem') and self.is_suggesting:
-            return True
         if user.has_perm('judge.edit_all_problem') or user.has_perm('judge.edit_public_problem') and self.is_public:
             return True
         if user.profile.id in self.editor_ids:
@@ -283,7 +294,7 @@ class Problem(models.Model):
                     return True
 
         # Problem is public.
-        if self.is_public and not self.is_suggesting:
+        if self.is_public:
             # Problem is not private to an organization.
             if not self.is_organization_private:
                 return True
@@ -293,8 +304,8 @@ class Problem(models.Model):
                 return True
 
             # If the user is in the organization.
-            if user.is_authenticated and \
-                    self.organizations.filter(id__in=user.profile.organizations.all()):
+            if user.is_authenticated and self.organization and \
+                    user.profile.organizations.filter(id=self.organization.id).exists():
                 return True
 
         if not user.is_authenticated:
@@ -307,10 +318,6 @@ class Problem(models.Model):
         # If the user can edit the problem.
         # We are using self.editor_ids to take advantage of caching.
         if self.is_editable_by(user) or user.profile.id in self.editor_ids:
-            return True
-
-        # If user is a suggester
-        if user.has_perm('judge.suggest_new_problem') and self.is_suggesting:
             return True
 
         # If user is a tester.
@@ -342,10 +349,10 @@ class Problem(models.Model):
         return False
 
     @classmethod
-    def get_visible_problems(cls, user):
+    def get_visible_problems(cls, user, include_deleted=False):
         # Do unauthenticated check here so we can skip authentication checks later on.
         if not user.is_authenticated:
-            return cls.get_public_problems()
+            return cls.get_public_problems(include_deleted)
 
         # Conditions for visible problem:
         #   - `judge.edit_all_problem` or `judge.see_private_problem`
@@ -353,16 +360,14 @@ class Problem(models.Model):
         #       - not is_public problems
         #           - author or curator or tester
         #           - is_organization_private and admin of organization
-        #           - is_suggesting and user is a suggester
         #       - is_public problems
         #           - not is_organization_private or in organization or `judge.see_organization_problem`
         #           - author or curator or tester
-        queryset = cls.objects.defer('description')
+        queryset = (cls.objects if include_deleted else cls.available).defer('description')
 
         edit_own_problem = user.has_perm('judge.edit_own_problem')
         edit_public_problem = edit_own_problem and user.has_perm('judge.edit_public_problem')
         edit_all_problem = edit_own_problem and user.has_perm('judge.edit_all_problem')
-        edit_suggesting_problem = edit_own_problem and user.has_perm('judge.suggest_new_problem')
 
         if not (user.has_perm('judge.see_private_problem') or edit_all_problem):
             q = Q(is_public=True)
@@ -372,10 +377,6 @@ class Problem(models.Model):
                     # Avoids needlessly joining Organization
                     Profile.organizations.through.objects.filter(profile=user.profile).values('organization_id'),
                 )
-
-            # Suggesters should be able to view suggesting problems
-            if edit_suggesting_problem:
-                q |= Q(suggester__isnull=False, is_public=False)
 
             # Authors, curators, and testers should always have access.
             q = cls.q_add_author_curator_tester(q, user.profile)
@@ -395,12 +396,14 @@ class Problem(models.Model):
     @classmethod
     def organization_filter_q(cls, queryset):
         q = Q(is_organization_private=True)
-        q &= Exists(Problem.organizations.through.objects.filter(problem=OuterRef('pk'), organization__in=queryset))
+        q &= Q(organization__in=queryset)
         return q
 
     @classmethod
-    def get_public_problems(cls):
-        return cls.objects.filter(is_public=True, is_organization_private=False).defer('description')
+    def get_public_problems(cls, include_deleted=False):
+        return ((cls.objects if include_deleted else cls.available)
+                .filter(is_public=True, is_organization_private=False)
+                .defer('description'))
 
     @classmethod
     def get_editable_problems(cls, user):
@@ -409,12 +412,10 @@ class Problem(models.Model):
         if user.has_perm('judge.edit_all_problem'):
             return cls.objects.all()
 
-        q = Q(authors=user.profile) | Q(curators=user.profile) | Q(suggester=user.profile)
+        q = Q(authors=user.profile) | Q(curators=user.profile)
 
         if user.has_perm('judge.edit_public_problem'):
             q |= Q(is_public=True)
-        if user.has_perm('judge.suggest_new_problem'):
-            q |= Q(suggester__isnull=False, is_public=False)
 
         return cls.objects.filter(q)
 
@@ -432,9 +433,6 @@ class Problem(models.Model):
     def editor_ids(self):
         editors = self.author_ids.union(
             Problem.curators.through.objects.filter(problem=self).values_list('profile_id', flat=True))
-        if self.suggester is not None:
-            editors = list(editors)
-            editors.append(self.suggester.id)
         return editors
 
     @cached_property
@@ -486,7 +484,7 @@ class Problem(models.Model):
 
     def update_stats(self):
         all_queryset = self.submission_set.filter(user__is_unlisted=False)
-        ac_queryset = all_queryset.filter(points__gte=self.points, result='AC')
+        ac_queryset = all_queryset.filter(result='AC')
         self.user_count = ac_queryset.values('user').distinct().count()
         submissions = all_queryset.count()
         if submissions:
@@ -607,7 +605,21 @@ class Problem(models.Model):
 
     def _rescore(self):
         from judge.tasks import rescore_problem
-        transaction.on_commit(rescore_problem.s(self.id, False).delay)
+        transaction.on_commit(rescore_problem.s(self.id).delay)
+
+    @property
+    def is_deleted(self):
+        return self.deleted_at is not None
+
+    def mark_as_deleted(self, invalidate_storage_cache=True):
+        """Soft-delete this problem. Use the garbage collector to permanently remove it after the grace period."""
+        self.deleted_at = timezone.now()
+        self.save(update_fields=['deleted_at'])
+        if invalidate_storage_cache and self.organization_id:
+            from judge.utils.cache_helper import storage_pie_cache_factory
+            storage_pie_cache_factory(self.organization_id).delete_cache()
+
+    mark_as_deleted.alters_data = True
 
     class Meta:
         permissions = (
@@ -616,7 +628,6 @@ class Problem(models.Model):
             ('create_organization_problem', _('Create organization problem')),
             ('edit_all_problem', _('Edit all problems')),
             ('edit_public_problem', _('Edit all public problems')),
-            ('suggest_new_problem', _('Suggest new problem')),
             ('problem_full_markup', _('Edit problems with full markup')),
             ('clone_problem', _('Clone problem')),
             ('upload_file_statement', _('Upload file-type statement')),
@@ -626,6 +637,9 @@ class Problem(models.Model):
             ('import_polygon_package', _('Import Codeforces Polygon package')),
             ('edit_type_group_all_problem', _('Edit type and group for all problems')),
         )
+        indexes = [
+            models.Index(fields=['is_public', 'is_organization_private', '-date']),
+        ]
         verbose_name = _('problem')
         verbose_name_plural = _('problems')
 
